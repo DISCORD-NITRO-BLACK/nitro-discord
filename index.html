@@ -1,82 +1,80 @@
-require("dotenv").config();
-const express = require("express");
-const mongoose = require("mongoose");
-const bcrypt = require("bcryptjs");
-const jwt = require("jsonwebtoken");
-const cors = require("cors");
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Love</title>
 
-const app = express();
-app.use(express.json());
-app.use(cors());
+<style>
+body {
+  margin: 0;
+  height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: linear-gradient(135deg, #ff9a9e, #fad0c4);
+  font-family: Arial, sans-serif;
+}
 
-// 🔗 اتصال بقاعدة البيانات
-mongoose.connect("mongodb://127.0.0.1:27017/authDB")
-.then(() => console.log("MongoDB Connected"))
-.catch(err => console.log(err));
+/* شكل القلب */
+.heart {
+  position: relative;
+  width: 200px;
+  height: 180px;
+  background-color: red;
+  transform: rotate(-45deg);
+  animation: pulse 1.5s infinite;
+}
 
-// 📌 نموذج المستخدم
-const UserSchema = new mongoose.Schema({
-  username: { type: String, required: true },
-  email: { type: String, required: true, unique: true },
-  password: { type: String, required: true }
-});
+.heart::before,
+.heart::after {
+  content: "";
+  position: absolute;
+  width: 200px;
+  height: 180px;
+  background-color: red;
+  border-radius: 50%;
+}
 
-const User = mongoose.model("User", UserSchema);
+.heart::before {
+  top: -100px;
+  left: 0;
+}
 
-// 🟢 إنشاء حساب
-app.post("/register", async (req, res) => {
-  try {
-    const { username, email, password } = req.body;
+.heart::after {
+  left: 100px;
+  top: 0;
+}
 
-    const existingUser = await User.findOne({ email });
-    if (existingUser)
-      return res.status(400).json({ message: "Email already exists" });
+/* النص داخل القلب */
+.text {
+  position: absolute;
+  width: 100%;
+  text-align: center;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%) rotate(45deg);
+  color: white;
+  font-size: 18px;
+  font-weight: bold;
+}
 
-    const hashedPassword = await bcrypt.hash(password, 10);
+/* حركة نبض */
+@keyframes pulse {
+  0% { transform: rotate(-45deg) scale(1); }
+  50% { transform: rotate(-45deg) scale(1.1); }
+  100% { transform: rotate(-45deg) scale(1); }
+}
+</style>
+</head>
 
-    const newUser = new User({
-      username,
-      email,
-      password: hashedPassword
-    });
+<body>
 
-    await newUser.save();
+<div class="heart">
+  <div class="text">
+    peshang <br> + <br> aro <br> + <br> mubin
+  </div>
+</div>
 
-    res.status(201).json({ message: "User registered successfully" });
-  } catch (error) {
-    res.status(500).json({ message: "Server error" });
-  }
-});
-
-// 🔵 تسجيل دخول
-app.post("/login", async (req, res) => {
-  try {
-    const { email, password } = req.body;
-
-    const user = await User.findOne({ email });
-    if (!user)
-      return res.status(400).json({ message: "Invalid credentials" });
-
-    const isMatch = await bcrypt.compare(password, user.password);
-    if (!isMatch)
-      return res.status(400).json({ message: "Invalid credentials" });
-
-    const token = jwt.sign(
-      { id: user._id },
-      "SECRET_KEY",
-      { expiresIn: "1d" }
-    );
-
-    res.json({
-      message: "Login successful",
-      token
-    });
-
-  } catch (error) {
-    res.status(500).json({ message: "Server error" });
-  }
-});
-
-// 🚀 تشغيل السيرفر
-const PORT = 5000;
-app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+</body>
+</html>
